@@ -27,29 +27,18 @@ CHANNEL_ENDPOINT = "http://localhost:5001" # don't forget to adjust in the botto
 CHANNEL_FILE = 'messages.json'
 CHANNEL_TYPE_OF_SERVICE = 'aiweb24:chat'
 
-#BANNED_WORDS = {"spam", "scam", "hack", "fuck", "bullshit", "shit"}
-#OFF_TOPIC_KEYS = {"religion", "politics"}
 
-#FILTERED_WORDS = ["spam", "offensive", "banned", "fuck", "shit", "bullshit"]
+### von hier ist filter von bad words ----------------------
 with open("badwords.txt", "r") as f:
     FILTERED_WORDS = set(word.strip().lower() for word in f.readlines())
-
-def censor_message(content):
+      
+def censor_message(content):       # censor word with asteriks (*)
     words = content.split()
     censored_words = ["*" * len(word) if word.lower() in FILTERED_WORDS else word for word in words]
     return " ".join(censored_words)
-'''
-def censor_message(content):
-    pattern = re.compile(r'\b(' + '|'.join(FILTERED_WORDS) + r')\b', re.IGNORECASE)
-    return pattern.sub(lambda x: '*' * len(x.group()), content)
 
-def filter_message(content):
-    """Filter unwanted words and check for off-topic messages."""
-    for word in BANNED_WORDS:
-        content = re.sub(rf'b{word}\b', '*' * len(word), content, flags=re.IGNORECASE)
-    off_topic = any(keyword.lower() in content.lower() for keyword in OFF_TOPIC_KEYS)
-    return content, off_topic
-'''
+### bis hier ------------------------------------------------
+
 
 @app.cli.command('register')
 def register_command():
@@ -117,17 +106,12 @@ def send_message():
     else:
         extra = message['extra']
 
+    ### Content definiert mit dem Fall dass ein Schimpfwort drin ist! -----------------
     content = censor_message(message['content'])
-    #filtered_content, off_topic = filter_message(message['content'])
-    #if off_topic:
-     #  return "Message was flagged as off-topic", 400
-    #if any(word in content.lower() for word in FILTERED_WORDS):
-     #  return "Message contains prohibited content", 400
-    
 
-    # add message to messages
+    # add message to messages (1 ÄNDERUNG!!!)
     messages = read_messages()
-    messages.append({'content': content,
+    messages.append({'content': content,   # das geändert zu content (oben definiert) damit die richtige Nachricht gespeichert wird
                      'sender': message['sender'],
                      'timestamp': message['timestamp'],
                      'extra': extra,
@@ -135,26 +119,19 @@ def send_message():
     save_messages(messages)
     return "OK", 200
 
+
 def read_messages():
     global CHANNEL_FILE
-    try:
+    try:          # more safe with open geändert!!!!!!!!!!
         with open(CHANNEL_FILE, 'r') as f:
             return json.load(f)
-       # f = open(CHANNEL_FILE, 'r')
+       
     except (FileNotFoundError, json.JSONDecodeError):
         return []
     
-    '''
-    try:
-        messages = json.load(f)
-    except json.decoder.JSONDecodeError:
-        messages = []
-    f.close()
-    return messages
-'''
 def save_messages(messages):
     global CHANNEL_FILE
-    with open(CHANNEL_FILE, 'w') as f:
+    with open(CHANNEL_FILE, 'w') as f:    # more safe with open geändert!!!!!!!!
         json.dump(messages, f)
 
 # Start development web server
