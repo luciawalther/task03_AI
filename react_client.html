@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple React App: Show Channels</title>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+
+function ChannelList() {
+            const [channels, setChannels] = React.useState([]); //save all channels that have been uploaded 
+            const [selectedChannel, setSelectedChannel] = React.useState(null); // save the selected channel
+            const [messages, setMessages] = React.useState([]); //save messages of selected channel
+            const [message, setMessage] = React.useState("");//save input text of user
+
+            //load channels from hub
+            React.useEffect(() => {
+                fetch("http://vm146.rz.uni-osnabrueck.de/hub", { //oder unser localer hub  http://127.0.0.1:5555
+                    headers: { Authorization: "Crr-K24d-2N" } //haben wir ein Authkey ?
+                })
+                    .then((res) => res.json())
+                    .then((data) => setChannels(data.channels)) //save the received channles 
+                    .catch((err) => console.error("Error fetching channels:", err));
+            }, []);
+
+            // load message of selected channel
+            React.useEffect(() => {
+                if (selectedChannel) {
+                    fetchMessages();
+                }
+            }, [selectedChannel]);
+
+            const fetchMessages = () => {
+                if (!selectedChannel) return;
+
+                fetch(selectedChannel.endpoint, {
+                    headers: { Authorization: `authkey ${selectedChannel.authkey}` },
+                })
+                    .then((res) => res.json())
+                    .then((data) => setMessages(data))
+                    .catch((err) => console.error("Error fetching messages:", err));
+            };
+
+            const sendMessage = () => {
+                if (!selectedChannel) return;
+
+                fetch(selectedChannel.endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `authkey ${selectedChannel.authkey}`,
+                    },
+                    body: JSON.stringify({
+                        content: message,
+                        sender: "User",
+                        timestamp: new Date().toISOString(),
+                    }),
+                })
+                    .then(() => {
+                        setMessage(""); //Clear input field after sending
+                        fetchMessages(); // update message list
+                    })
+                    .catch((err) => console.error("Error sending message:", err));
+            };
+
+            return (
+                <div>
+                    <h2>Available Channels</h2>
+                    <ul>
+                        {channels.map((channel) => ( //run through the channel list and create a button for each of them 
+                            <li key={channel.id}>
+                                <button onClick={() => setSelectedChannel(channel)}>  
+                                    {channel.name}
+                                </button>
+                            </li>
+                            //if you click on the botton , you automatically reload the list of messages
+                        ))}
+                    </ul>
+                            
+                    {selectedChannel && ( // only by selecting a channel,the messages are displayed
+                        <div>
+                            <h2>Messages in {selectedChannel.name}</h2>
+                            <ul>
+                                {messages.map((msg, index) => (
+                                    <li key={index}>
+                                        <strong>{msg.sender}:</strong> {msg.content}
+                                    </li>
+                                ))}
+                            </ul>
+                            <input // save the values in messages 
+                                type="text"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Type a message..."
+                            />
+                            <button onClick={sendMessage}>Send</button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // main code: render the ChannelList component, add more components here
+        ReactDOM.render(
+            <div>
+                <h1>Chat client: List of channels</h1>
+                <ChannelList />
+            </div>,
+            document.getElementById('root'));
+    </script>
+</body>
+</html>
