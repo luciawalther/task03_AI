@@ -22,12 +22,25 @@ function ChannelList() {
 
             //load channels from hub
             React.useEffect(() => {
-                fetch("http://vm146.rz.uni-osnabrueck.de/hub", { //oder unser localer hub  http://127.0.0.1:5555
-                    headers: { Authorization: "Crr-K24d-2N" } //haben wir ein Authkey ?
-                })
-                    .then((res) => res.json())
-                    .then((data) => setChannels(data.channels)) //save the received channles 
-                    .catch((err) => console.error("Error fetching channels:", err));
+            fetch("http://vm146.rz.uni-osnabrueck.de/hub", {
+            method: "GET",
+            headers: {
+            Authorization: "Crr-K24d-2N",
+            "Content-Type": "application/json",
+            },
+            mode: "cors",
+            })
+            .then((res) => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! Status: ${res.status}`);
+            }
+            return res.json();
+            })
+            .then((data) => {
+            console.log("Received channels:", data);
+            setChannels(data.channels);
+            })
+            .catch((err) => console.error("Error fetching channels:", err));
             }, []);
 
             // load message of selected channel
