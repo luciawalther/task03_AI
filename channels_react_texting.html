@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Client: List of Channels</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+        }
+        #root {
+            width: 100%;
+        }
+        .channel-list-title {
+        font-size: 30px; 
+        font-weight: bold;
+        color: #333; 
+        margin-top: 39px;  
+        text-align: center; 
+        }
+        .channel-list-container {
+            width: 100%;
+            transition: width 0.3s;
+        }
+        .channel-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 25px;
+        }
+        .channel-item {
+            background: rgba(255, 255, 255, 0.85);
+            border-left: 4px solid #67A294;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .channel-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .search-bar {
+            width: 90%;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 5px;
+            font-size: 16px;
+            border: 2px solid rgba(103, 162, 148, 0.6);
+            border-radius: 5px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+        }
+        .search-bar:focus {
+            border-color: #67A294;
+            box-shadow: 0 0 8px rgba(103, 162, 148, 0.6);
+        }
+        .messages-container {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 8px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+        .message.user {
+            background-color: #67A294;
+            color: white;
+            align-self: flex-end;
+            text-align: right;
+            margin-left: auto;
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 8px;
+            word-wrap: break-word;
+            margin-right: 10px;
+        }
+        @media (min-width: 768px) {
+            .message.user {
+                max-width: 70%;
+                margin-right: 100px;
+            }
+        }
+        .message.other {
+            background-color: #ddd;
+            color: black;
+            align-self: flex-start;
+            text-align: left;
+            margin-right: auto;
+        }
+        .message-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: rgba(40, 40, 40, 0.95);
+            color: #ccc;
+        }
+        body.dark-mode .channel-item {
+            background: rgba(90, 90, 90, 0.779);
+            border-left: 4px solid #67A294;
+        }
+        body.dark-mode .search-bar {
+            border: 2px solid rgba(103, 162, 148, 0.8);
+            background-color:rgba(90, 90, 90, 0.779); 
+            color: #ccc; 
+        }
+        
+        body.dark-mode .side-panel {
+            background-color: rgba(60, 60, 60, 0.85); 
+        }
+        body.dark-mode .channel-list-title {
+            color: #ccc;
+        }
+        body.dark-mode .message-input {
+            background: rgba(90, 90, 90, 0.779)
+        }
+
+
+        /* Fixierte Seitenleiste */
+        .side-panel {
+            width: 330px;
+            min-width: 330px;
+            max-width: 330px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px 10px 10px 10px; 
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        .side-panel .search-bar {
+            width: 90%;
+            font-size: 14px;
+        }
+
+        /* Darkmode Button */
+        .darkmode-toggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #67A294;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 10;
+        }
+        .darkmode-toggle:hover {
+            background: #558779;
+        }
+
+        /* Styles for message input and send button */
+        .message-input {
+            flex: 1;
+            width: 80%;
+            padding: 12px;
+            margin-top: 15px;
+            margin-right: 10px;
+            font-size: 16px;
+            border: 2px solid rgba(103, 162, 148, 0.6);
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .message-input:focus {
+            border-color: #67A294;
+            box-shadow: 0 0 8px rgba(103, 162, 148, 0.6);
+        }
+
+        .send-button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            margin-left: 5px;
+            background: #67A294;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .send-button:hover {
+            background: #558779;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+        function ChannelList() {
+            const [channels, setChannels] = React.useState([]);
+            const [searchTerm, setSearchTerm] = React.useState("");
+            const [selectedChannel, setSelectedChannel] = React.useState(null);
+            const [messages, setMessages] = React.useState([]);
+            const [message, setMessage] = React.useState(""); // Speichert die Nachricht, die der Benutzer eingibt
+            const [isDarkMode, setIsDarkMode] = React.useState(false);
+            const [username, setUsername] = React.useState("");
+            const [tempUsername, setTempUsername] = React.useState("");
+
+            React.useEffect(() => {
+                fetch("http://vm146.rz.uni-osnabrueck.de/hub/channels", {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Crr-K24d-2N",
+                        "Content-Type": "application/json",
+                    },
+                    mode: "cors",
+                })
+                .then((res) => res.json())
+                .then((data) => setChannels(data.channels))
+                .catch((err) => console.error("Error fetching channels:", err));
+            }, []);
+
+            React.useEffect(() => {
+                if (selectedChannel) {
+                    fetch(selectedChannel.endpoint, {
+                        headers: { Authorization: `authkey ${selectedChannel.authkey}` },
+                    })
+                    .then((res) => res.json())
+                    .then((data) => setMessages(data))
+                    .catch((err) => console.error("Error fetching messages:", err));
+                }
+            }, [selectedChannel]);
+
+            const filteredChannels = channels.filter(channel => 
+                channel.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const toggleDarkMode = () => {
+                setIsDarkMode(!isDarkMode);
+            };
+
+            const sendMessage = () => {
+                if (!selectedChannel) return;
+
+                fetch(selectedChannel.endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `authkey ${selectedChannel.authkey}`,
+                    },
+                    body: JSON.stringify({
+                        content: message,
+                        sender: username,
+                        timestamp: new Date().toISOString(),
+                    }),
+                })
+                    .then(() => {
+                        setMessage(""); // Eingabefeld nach dem Senden leeren
+                        fetch(selectedChannel.endpoint, {
+                            headers: { Authorization: `authkey ${selectedChannel.authkey}` },
+                        })
+                        .then((res) => res.json())
+                        .then((data) => setMessages(data)) // Nachrichten aktualisieren
+                        .catch((err) => console.error("Error fetching messages:", err));
+                    })
+                    .catch((err) => console.error("Error sending message:", err));
+            };
+
+            React.useEffect(() => {
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }, [isDarkMode]);
+            
+            // If no user name was entered, show input
+            if (!username) {
+                return (
+                    <div style={{ textAlign: "center", padding: "50px" }}>
+                        <h2>Enter your username</h2>
+                        <input
+                        type="text"
+                        placeholder="Your name.."
+                        value={tempUsername}
+                        onChange={(e) => setTempUsername(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && tempUsername.trim()) {
+                                setUsername(tempUsername.trim());
+                            }
+                        }}
+                        style={{
+                            padding: "10px",
+                            fontSize: "16px",
+                            borderRadius: "5px",
+                            border: "2px solid #67A294",
+                            outline: "none",
+                }}
+            />
+            <button
+                onClick={() => {
+                    if (tempUsername.trim()) {
+                        setUsername(tempUsername.trim());
+                    }
+                }}
+                style={{
+                    marginLeft: "10px",
+                    padding: "10px 15px",
+                    fontSize: "16px",
+                    backgroundColor: "#67A294",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                }}
+            >
+                Confirm
+            </button>
+        </div>
+    );
+}
+            return (
+                <div style={{ display: 'flex' }}>
+                    <button className="darkmode-toggle" onClick={toggleDarkMode}>
+                        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                    </button>
+                    <div className="side-panel">
+                        <h2 className="channel-list-title">Channel List</h2>
+                        <input 
+                            type="text" 
+                            placeholder="Search Channels..." 
+                            className="search-bar"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <ul className="channel-list">
+                            {filteredChannels.map(channel => (
+                                <li 
+                                    className="channel-item" 
+                                    key={channel.id}
+                                    onClick={() => setSelectedChannel(channel)}
+                                >
+                                    <strong>{channel.name}</strong>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="messages-container">
+                        {selectedChannel && (
+                            <div>
+                                <h2>Messages in {selectedChannel.name}</h2>
+                                <div className="message-container">
+                                    {messages.map((msg, index) => (
+                                        <div key={index} className={`message ${msg.sender === username ? "user" : "other"}`}>
+                                            <strong>{msg.sender}:</strong> {msg.content}
+                                        </div> 
+                                    ))}
+                                </div> 
+
+                                <input
+                                    type="text"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder="Type a message..."
+                                    className="message-input"
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            sendMessage();
+                                        }
+                                    }}
+                                />
+                                <button onClick={sendMessage} className="send-button">Send</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<ChannelList />, document.getElementById('root'));
+    </script>
+</body>
+</html>
