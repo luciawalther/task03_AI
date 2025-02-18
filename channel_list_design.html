@@ -176,6 +176,8 @@
             const [messages, setMessages] = React.useState([]);
             const [message, setMessage] = React.useState(""); // Speichert die Nachricht, die der Benutzer eingibt
             const [isDarkMode, setIsDarkMode] = React.useState(false);
+            const [username, setUsername] = React.useState("");
+            const [tempUsername, setTempUsername] = React.useState("");
 
             React.useEffect(() => {
                 fetch("http://vm146.rz.uni-osnabrueck.de/hub/channels", {
@@ -221,7 +223,7 @@
                     },
                     body: JSON.stringify({
                         content: message,
-                        sender: "User",
+                        sender: username,
                         timestamp: new Date().toISOString(),
                     }),
                 })
@@ -244,7 +246,47 @@
                     document.body.classList.remove('dark-mode');
                 }
             }, [isDarkMode]);
-
+            
+            // If no user name was entered, show input
+            if (!username) {
+                return (
+                    <div style={{ textAlign: "center", padding: "50px" }}>
+                        <h2>Enter your username</h2>
+                        <input
+                        type="text"
+                        placeholder="Your name.."
+                        value={tempUsername}
+                        onChange={(e) => setTempUsername(e.target.value)}
+                        style={{
+                            padding: "10px",
+                            fontSize: "16px",
+                            borderRadius: "5px",
+                            border: "2px solid #67A294",
+                            outline: "none",
+                }}
+            />
+            <button
+                onClick={() => {
+                    if (tempUsername.trim()) {
+                        setUsername(tempUsername.trim());
+                    }
+                }}
+                style={{
+                    marginLeft: "10px",
+                    padding: "10px 15px",
+                    fontSize: "16px",
+                    backgroundColor: "#67A294",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                }}
+            >
+                Confirm
+            </button>
+        </div>
+    );
+}
             return (
                 <div style={{ display: 'flex' }}>
                     <button className="darkmode-toggle" onClick={toggleDarkMode}>
