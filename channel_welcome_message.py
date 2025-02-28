@@ -115,7 +115,7 @@ def home_page():
     if not check_authorization(request):
         return "Invalid authorization", 400
     messages = read_messages()
-    #welcome message is displayed when channel is opened
+    #welcome message is displayed and always on top 
     response_messages = [WELCOME_MESSAGE] + messages
     
     return jsonify(response_messages)
