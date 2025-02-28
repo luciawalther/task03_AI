@@ -4,6 +4,7 @@ from flask import Flask, request, render_template, jsonify
 import json
 import requests
 import random
+import os
 
 # Class-based application configuration
 class ConfigClass(object):
@@ -22,10 +23,12 @@ HUB_URL = 'http://vm146.rz.uni-osnabrueck.de/hub'
 HUB_AUTHKEY = 'Crr-K24d-2N'
 CHANNEL_AUTHKEY = '0987654321'
 CHANNEL_NAME = "Motivation Channel"
-CHANNEL_ENDPOINT = "http://localhost:5001" # Update this URL if necessary
+CHANNEL_ENDPOINT = "http://vm146.rz.uni-osnabrueck.de/u097/ai_task03/channel.wsgi" #localhost:5001" # Update this URL if necessary
 CHANNEL_FILE = 'messages.json'  # File to store messages
 CHANNEL_TYPE_OF_SERVICE = 'aiweb24:chat'
 MAX_MESSAGES = 20  # Limit the number of stored messages
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BADWORDS_FILE = os.path.join(BASE_DIR, 'badwords.txt')
 
 # Welcome message displayed when the channel is opened
 WELCOME_MESSAGE = {
@@ -36,7 +39,7 @@ WELCOME_MESSAGE = {
 }
 
 # Load filtered words for censoring inappropriate messages
-with open("badwords.txt", "r") as f:
+with open(BADWORDS_FILE, "r") as f:
     FILTERED_WORDS = set(word.strip().lower() for word in f.readlines())
 
 # Function to censor inappropriate words
