@@ -116,10 +116,9 @@ def home_page():
         return "Invalid authorization", 400
     messages = read_messages()
     #welcome message is displayed when channel is opened
-    if not any(msg['content'] == WELCOME_MESSAGE['content'] for msg in messages):
-        messages.insert(0, WELCOME_MESSAGE)
-        save_messages(messages)
-    return jsonify(messages)
+    response_messages = [WELCOME_MESSAGE] + messages
+    
+    return jsonify(response_messages)
 
 # POST: Send a message to the channel
 @app.route('/', methods=['POST'])
